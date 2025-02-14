@@ -1,57 +1,73 @@
 import time
 import board
 import pwmio
+from sonarbit import Sonarbit
 from adafruit_motor import servo
-#init our servo
-pwm = pwmio.PWMOut(board.D0, duty_cycle = 2**15, frequency=50)
-pwm_2 = pwmio.PWMOut(board.D1, duty_cycle = 2**15, frequency=50)
 
+#init our servo
+pwm = pwmio.PWMOut(board.D0,frequency=50)
+pwm_2 = pwmio.PWMOut(board.D1, frequency=50)
 
 servo_1 = servo.ContinuousServo(pwm)
 servo_2 = servo.ContinuousServo(pwm_2)
 
+distance_sensor = Sonarbit(board.D2)
+
+prev_distance = 570  # Initial value
 
 def straight():
-    .throttle = 0.5
-    m2.throttle = -0.45
-
-
-def straight():
+    print("forward")
     servo_1.throttle = 0.365
     servo_2.throttle = -0.5
-
 def stop():
+    print("stop")
     servo_1.throttle = 0.0
     servo_2.throttle = 0.0
 
+def reverse():
+    print("reverse")
+    servo_1.throttle = -0.5
+    servo_2.throttle = -0.5
 
-
-while true
+def right():
     print("right")
-    servo_1.throttle = 0
-    servo_2.throttle = 0.5
+    servo_1.throttle = 0.2
+    servo_2.throttle = 0.2
+
+def left():
     print("left")
-    servo_1.throttle = 0.5
+    servo_1.throttle = 0.2
+    servo_2.throttle = -0.2
+
+def distance_wall():
+    global prev_distance
+    distance = distance_sensor.get_distance(prev_distance)
+    print("The object is: " + str(distance) +  " cm away")
+
+    prev_distance = distance
+
+# Function to control your rover motors
+def stop_rover():
+    # Code to stop the rover's motors
+    servo_1.throttle = 0
     servo_2.throttle = 0
 
+def move_forward():
+    # Code to move the rover forward
+    servo_1.throttle = -0.365
+    servo_2.throttle = 0.5
 
-'''while True:
-    print("forward")
-    servo_1.throttle = 1.0
-    servo_2.throttle = 1.0
-    time.sleep(5.0)
-    print("stop")
-    servo_1.throttle = 0.0
-    servo_2.throttle = 0.0
-    time.sleep(1.0)
-    print("reverse")
-    servo_1.throttle = -1.0
-    servo_2.throttle = -1.0
-    time.sleep(5.0)
-    print("stop")
-    servo_1.throttle = -0.0
-    servo_2.throttle = 0.0
-    time.sleep(1.0)# Write your code here :-)
+while True:
+    #read distance sensor
+    distance = distance_sensor.get_distance(prev_distance)
 
+    if distance < 10:  # Threshold in cm
+        stop_rover()
+    else:
+        move_forward()
+
+    prev_distance = distance
+    time.sleep(0.1)
+    print(distance)
 
 
