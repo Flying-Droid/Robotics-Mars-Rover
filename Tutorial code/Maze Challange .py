@@ -1,7 +1,7 @@
 import time
 import board
 import pwmio
-import digitalio
+from digitalio import DigitalInOut, Direction, Pull
 from sonarbit import Sonarbit
 from adafruit_motor import servo
 
@@ -9,16 +9,18 @@ from adafruit_motor import servo
 pwm = pwmio.PWMOut(board.D0,frequency=50)
 pwm_2 = pwmio.PWMOut(board.D1, frequency=50)
 
-led_right = digitalio.DigitalInOut(board.D9)
-led_u_turn = digitalio.DigitalInOut(board.D12)
-led_forward = digitalio.Direction.OUTPUT
-led_right.direction = digitalio.Direction.OUTPUT
+led_right = DigitalInOut(board.D9)
+led_forward = DigitalInOut(board.D12)
+
+led_right.direction = Direction.OUTPUT
+led_forward.direction = Direction.OUTPUT
 
 servo_1 = servo.ContinuousServo(pwm)
 servo_2 = servo.ContinuousServo(pwm_2)
 
 distance_sensor_front = Sonarbit(board.D2)
 distance_sensor_right = Sonarbit(board.D3)
+distance_sensor_left = Sonarbit(board.D5)
 
 
 #D0 left servo
@@ -28,9 +30,11 @@ distance_sensor_right = Sonarbit(board.D3)
 
 def stop_rover():
     # Code to stop the rover's motors
+    print("stop")
     servo_1.throttle = 0
     servo_2.throttle = 0
     time.sleep(2.0)
+
 
 def reverse():
     print("reverse")
@@ -39,8 +43,14 @@ def reverse():
 
 def right():
     print("right")
-    servo_1.throttle = -0.365
-    servo_2.throttle = -0.2
+    servo_1.throttle = -0.5
+    servo_2.throttle = -0.6
+    time.sleep(0.75)
+
+def left():
+    print("left")
+    servo_1.throttle = 0.4
+    servo_2.throttle = 0.6
     time.sleep(0.7)
 
 def u_turn():
@@ -53,44 +63,61 @@ def u_turn():
 
 def move_forward():
     # Code to move the rover forward
-    servo_1.throttle = -0.18
-    servo_2.throttle = 0.5
+    servo_1.throttle = -0.25
+    servo_2.throttle = 0.2
+    time.sleep(2.0)
+    print("forward")
 
 prev_distance = 570  # Initial value
 prev_distance_right = 570
+
 
 
 while True:
     #read distance sensor
     distance = distance_sensor_front.get_distance(prev_distance)
     distance_right = distance_sensor_right.get_distance(prev_distance)
+    distance_left = distance_sensor_left.get_distance(prev_distance)
+    if distance_right > 20 :
+        time.sleep(1.0)
+        #If no wall on right turn right
+        led_right.value=False
 
-    if distance_right > 30 :  # Wall in front and wall on the right
 
         right()
         move_forward()
 
-        time.sleep(2.5)
-
-        print("right")
         stop_rover()
-        print("stop")
-    else:
-        if distance > 30:
-            move_forward()
-            print("forward")
-            stop_rover()
 
-            print("stop")
+
+    else:
+        time.sleep(1.0)
+        led_right.value=True
+        if distance > 20:
+            led_forward.value=False
+
+            move_forward()
+
+
+            stop_rover()
 
         else:
-            u_turn()
+            if distance_left > 20:
+                left()
+                move_forward()
+                stop_rover()
 
-            print("u turn")
 
-            stop_rover()
 
-            print("stop")
+
+
+
+            else:
+                u_turn()
+                led_forward.value=True
+                stop_rover()
+
+
 
 
 
@@ -98,9 +125,9 @@ while True:
 
     prev_distance = distance
     prev_distance_right = distance_right
+    prev_distance_left = distance_left
     time.sleep(0.1)
     print(distance)
-
 
 
 
