@@ -12,24 +12,86 @@ pwm_2 = pwmio.PWMOut(board.D1, frequency=50)
 servo_1 = servo.ContinuousServo(pwm)
 servo_2 = servo.ContinuousServo(pwm_2)
 
-user_f_input = int(input("How long do you want your robot to move forward"))
-
-def move_forward():
+def move_forward(sleep_time):
     # Code to move the rover forward
     servo_1.throttle = -1
     servo_2.throttle = 1
-
+    time.sleep(sleep_time)
     print("forward")
 
+def stop_rover(sleep_time):
+    # Code to stop the rover's motors
+    print("stop")
+    servo_1.throttle = 0
+    servo_2.throttle = 0
+    time.sleep(time_sleep)
 
-def moving_forward(robot_f):
-    move_forward()
-    time.sleep(robot_f)
+def right(sleep_time):
+    print("right")
+    # code to turn our servos right
+    servo_1.throttle = -1
+    servo_2.throttle = 0
+    time.sleep(sleep_time)
+
+def left(sleep_time):
+    print("left")
+    #code to turn our servos left
+    servo_1.throttle = 1
+    servo_2.throttle = 1
+    time.sleep(sleep_time)
+
+def u_turn(sleep_time):
+    print("u turn")
+    # code to make our robot do a 180
+    servo_1.throttle = 1
+    servo_2.throttle = 1
+    time.sleep(sleep_time)
+
+while True:
+    right(0.5)
+    move_forward(0.1)
+
+'''
+
+# draw a circle
+
+right(7.6)
+
+'''
+'''
+
+#Make a triangle
+
+move_forward(1.5)
+
+right(1.4)
+
+move_forward(1.5)
+
+right(1.4)
+
+move_forward(1.5)
+'''
+'''
+#Make a sqaure
+
+move_forward(1)
+
+right(1)
+
+move_forward(1)
+
+right(1)
+
+move_forward(1)
 
 
-moving_forward(user_f_input)
+right(1)
+
+move_forward(1)
 
 
+'''
 
 
 
