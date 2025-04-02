@@ -1,4 +1,51 @@
+
+import time
 import board
+import pwmio
+from adafruit_motor import servo
+from rc import RCReceiver
+from arcade_drive_servo import Drive
+
+
+pwm = pwmio.PWMOut(board.D5, duty_cycle=2 ** 15, frequency=50)
+my_servo = servo.Servo(pwm)
+
+rc = RCReceiver(ch1 = board.D10, ch2 = board.D11, ch3 = None, ch4 = None,
+ch5 = board.D12, ch6 = board.D13)
+
+drive = Drive(left_pin=board.D2, right_pin=board.D3, left_stop=0.0, right_stop=0.0)
+
+while True:
+    spin = rc.read_channel(1) # spin
+    throttle = rc.read_channel(2) # throttle
+    arm = rc.read_channel(6)
+
+    if spin is not None and throttle is not None: # must not be None to do something with the output
+        drive.drive(spin,throttle)
+        #print("spin", spin, "throttle", throttle) # move our motors arcade drive style
+
+    else:
+        if arm == 0:
+            my_servo.angle = 0 # set the servo to 0 Degrees, the min point
+            time.sleep(1)
+            print("0 degrees")
+        elif arm == 1:
+            myy_servo.angle = 90 # set the servo to 0 Degrees, the min point
+            time.sleep(1)
+            print("90 degrees")
+        elif arm == 2:
+            my_servo.angle = 180 # set the servo to 0 Degrees, the min point
+            time.sleep(1)
+            print("180 degrees")
+
+    time.sleep(0.02)  # Maintains sync wit
+
+
+
+
+
+
+'''import board
 import time
 from rc import RCReceiver
 from arcade_drive_servo import Drive
@@ -20,7 +67,7 @@ while True:
 
 
     time.sleep(0.02)
-
+'''
 '''
 import time
 import board
