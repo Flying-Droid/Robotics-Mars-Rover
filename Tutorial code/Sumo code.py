@@ -8,35 +8,38 @@ import displayio
 import terminalio
 import adafruit_displayio_ssd1306
 from digitalio import DigitalInOut, Direction, Pull
-
-'''
+from i2cdisplaybus import I2CDisplayBus
+from sonarbit import Sonarbit
 #------ OLED screen ------
 displayio.release_displays()
 
 oled_reset = board.D9
 
+#releases current displays if any were initialized before setup
+displayio.release_displays()
+
 # Use for I2C
 i2c = board.I2C()
-display_bus = displayio.I2CDisplay(i2c, device_address=0x3d, reset=oled_reset)
+display_bus = I2CDisplayBus(i2c, device_address=0x3d) # or 0x3d
+display = adafruit_displayio_ssd1306.SSD1306(display_bus, width=128, height=64)
 
-WIDTH = 128
-HEIGHT = 64  # Change to 32 if needed
-BORDER = 5
-
-display = adafruit_displayio_ssd1306.SSD1306(display_bus, width=WIDTH, height=HEIGHT)
-
-'''
 button= DigitalInOut(board.D2)
 button.direction=Direction.INPUT
 button.pull= Pull.UP
 
+Touchsensor= DigitalInOut(board.D7)
+Touchsensor.direction= Direction.INPUT
+Touchsensor.pull= Pull.UP
+distance_sensor_front = Sonarbit(board.D3)
+#distance_sensor_right = Sonarbit(board.D3)
 analog_in = AnalogIn(board.A0)
 new_min = 0
 new_max = 100
 pwm = pwmio.PWMOut(board.D0, duty_cycle=2 ** 15, frequency=50)
 pwm2 = pwmio.PWMOut(board.D1, duty_cycle=2 ** 15, frequency=50)
-my_servo_right = servo.Servo(pwm)
-my_servo_left = servo.Servo(pwm)
+my_servo_right = servo.ContinuousServo(pwm)
+my_servo_left = servo.ContinuousServo(pwm2)
+
 def mapped_voltage(pin):
     # Maps our current 0-65535 range to 0-100
     mapped_value = map_range(pin.value, 0, 65535, 0, 100)
@@ -50,43 +53,57 @@ white_max = 50  # change to maximum observed reading for white
 air_min = 51  # change to minimum observed reading for in the air
 air_max = 79  # change to minimum observed reading for in the air
 robot_active=False
+prev_distance = 570
+print("start loop")
 while True:
     if button.value == False:
         robot_active = True
-
-    elif robot_active == True:
-        line_sensor = mapped_voltage(analog_in)  # Replace with your init sensor
-
+        contact=False
+    if robot_active:
+        line_sensor = mapped_voltage(analog_in)
+        distance = distance_sensor_front.get_distance(prev_distance)# Replace with your init sensor
+        print(distance)
         if line_sensor > black_min:
             print("on black line!")
             print(line_sensor)
-            # Stop
-            my_servo_left.throttle = 0.0
-            my_servo_right.throttle = 0.0
+            #stop
+            my_servo_left.throttle=0.0
+            my_servo_right.throttle=0.0
             time.sleep(0.2)
-            # Backup
-            my_servo_left.throttle = -0.5
-            my_servo_right.throttle = -0.5
+            #Backup
+            my_servo_left.throttle=-0.5
+            my_servo_right.throttle=-0.5
             time.sleep(0.3)
-            # Turn around
-            my_servo_left.throttle = 0.5
-            my_servo_right.throttle = -0.5
+            #Turn around
+            my_servo_left.throttle=0.5
+            my_servo_right.throttle=-0.5
             time.sleep(0.75)
-            # Consider turning on debug LED 1 here
+            # consider turning on debug LED 1 here
 
-        elif air_min < line_sensor < air_max:
+        elif line_sensor < air_min and line_sensor > air_max:
             print("lifted up in the air!")
             print(line_sensor)
-            my_servo_left.throttle = 0.5
-            my_servo_right.throttle = 0.5
-            # Consider turning on debug LED 2 here
-
+            my_servo_left.throttle=0.5
+            my_servo_right.throttle=0.5
+            # consider turning on debug LED 2 here
         else:
             print("we're on white!")
             print(line_sensor)
-            my_servo_left.throttle = 0.5
-            my_servo_right.throttle = 0.5
-            # Consider turning off all LEDs here
+            my_servo_left.throttle=0.25
+            my_servo_right.throttle=0.25
+
+            # consider turning off all LEDs here
+            if distance< 60:
+                my_servo_left.throttle=0.5
+                my_servo_right.throttle=0.5
+                print("I see you!")
+                if Touchsensor == True:
+                    contact= True
+                    print("contact")
+                if contact==True:
+                    print("contact")
+            else:
+                print("Where are you?")
 
         time.sleep(0.02)
 
