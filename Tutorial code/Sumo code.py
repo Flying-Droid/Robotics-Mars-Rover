@@ -55,6 +55,63 @@ air_max = 79  # change to minimum observed reading for in the air
 robot_active=False
 prev_distance = 570
 print("start loop")
+
+'''
+#right
+
+my_servo_left.throttle=-0.5
+my_servo_right.throttle=-0.5
+time.sleep(0.5)
+
+'''
+
+my_servo_left.throttle=-0.15
+my_servo_right.throttle=-0.15
+time.sleep(0.3)
+
+my_servo_left.throttle=0.0
+my_servo_right.throttle=0.0
+time.sleep(0.4)
+
+my_servo_left.throttle=0.5
+my_servo_right.throttle=-0.5
+
+def search():
+    print("we're on white!")
+    print("Colour",line_sensor)
+    my_servo_left.throttle=-0.15
+    my_servo_right.throttle=-0.15
+
+
+
+
+def black_line():
+    print("on black line!")
+    print("Colour",line_sensor)
+    #stop
+    my_servo_left.throttle=0.0
+    my_servo_right.throttle=0.0
+    time.sleep(0.2)
+    #Backup
+    my_servo_left.throttle=--0.7
+    my_servo_right.throttle=-0.6
+    time.sleep(3)
+    #Turn around
+    my_servo_left.throttle=-0.2
+    my_servo_right.throttle=-0.2
+    time.sleep(1.3)
+
+
+
+def enemy_found():
+    print("I see you!")
+    my_servo_left.throttle=0.5
+    my_servo_right.throttle=-0.5
+
+
+
+
+
 while True:
     if button.value == False:
         robot_active = True
@@ -62,49 +119,22 @@ while True:
     if robot_active:
         line_sensor = mapped_voltage(analog_in)
         distance = distance_sensor_front.get_distance(prev_distance)# Replace with your init sensor
-        print(distance)
+
         if line_sensor > black_min:
-            print("on black line!")
-            print(line_sensor)
-            #stop
-            my_servo_left.throttle=0.0
-            my_servo_right.throttle=0.0
-            time.sleep(0.2)
-            #Backup
-            my_servo_left.throttle=-0.5
-            my_servo_right.throttle=-0.5
-            time.sleep(0.3)
-            #Turn around
-            my_servo_left.throttle=0.5
-            my_servo_right.throttle=-0.5
-            time.sleep(0.75)
-            # consider turning on debug LED 1 here
+            black_line()
 
-        elif line_sensor < air_min and line_sensor > air_max:
-            print("lifted up in the air!")
-            print(line_sensor)
-            my_servo_left.throttle=0.5
-            my_servo_right.throttle=0.5
-            # consider turning on debug LED 2 here
+
         else:
-            print("we're on white!")
-            print(line_sensor)
-            my_servo_left.throttle=0.25
-            my_servo_right.throttle=0.25
 
-            # consider turning off all LEDs here
-            if distance< 60:
-                my_servo_left.throttle=0.5
-                my_servo_right.throttle=0.5
-                print("I see you!")
-                if Touchsensor == True:
-                    contact= True
-                    print("contact")
-                if contact==True:
-                    print("contact")
+            if distance < 60:
+                enemy_found()
+
+
             else:
-                print("Where are you?")
-
-        time.sleep(0.02)
+                search()
 
 
+
+    time.sleep(0.02)
+
+#turn 45 degrees
