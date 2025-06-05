@@ -56,25 +56,6 @@ robot_active=False
 prev_distance = 570
 print("start loop")
 
-'''
-#right
-
-my_servo_left.throttle=-0.5
-my_servo_right.throttle=-0.5
-time.sleep(0.5)
-
-'''
-
-my_servo_left.throttle=-0.15
-my_servo_right.throttle=-0.15
-time.sleep(0.3)
-
-my_servo_left.throttle=0.0
-my_servo_right.throttle=0.0
-time.sleep(0.4)
-
-my_servo_left.throttle=0.5
-my_servo_right.throttle=-0.5
 
 def search():
     print("we're on white!")
@@ -95,7 +76,7 @@ def black_line():
     #Backup
     my_servo_left.throttle=--0.7
     my_servo_right.throttle=-0.6
-    time.sleep(3)
+    time.sleep(1)
     #Turn around
     my_servo_left.throttle=-0.2
     my_servo_right.throttle=-0.2
@@ -105,8 +86,10 @@ def black_line():
 
 def enemy_found():
     print("I see you!")
-    my_servo_left.throttle=0.5
-    my_servo_right.throttle=-0.5
+    my_servo_left.throttle=-0.4
+     my_servo_right.throttle=0.4
+
+
 
 
 
